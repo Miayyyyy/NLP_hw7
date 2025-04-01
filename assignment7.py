@@ -452,7 +452,6 @@ class DecoderLayer(tf.keras.layers.Layer):
         # calculate self-attention using the Q from the first block and K and V from the encoder output.
         # Dropout will be applied during training
         # Return attention scores as attn_weights_block2 (~1 line)
-        mult_attn_out2, attn_weights_block2 = None
 
         # # apply layer normalization (layernorm2) to the sum of the attention output and the Q from the first block (~1 line)
         mult_attn_out2, attn_weights_block2 = self.mha2(
@@ -574,7 +573,6 @@ class Decoder(tf.keras.layers.Layer):
         for i in range(self.num_layers):
             # pass x and the encoder output through a stack of decoder layers and save the attention weights
             # of block 1 and 2 (~1 line)
-            x, block1, block2 = None
             x, block1, block2 = self.dec_layers[i](x, enc_output, training, look_ahead_mask, padding_mask)
 
             # update attention_weights dictionary with the attention weights of block 1 and block 2
