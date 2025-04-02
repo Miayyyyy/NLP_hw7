@@ -534,8 +534,8 @@ class Decoder(tf.keras.layers.Layer):
                            for _ in range(self.num_layers)]
         self.dropout = tf.keras.layers.Dropout(dropout_rate)
 
-    def call(self, x, enc_output, training,
-             look_ahead_mask, padding_mask):
+    def call(self, x, enc_output, *, training=False,
+             look_ahead_mask=None, padding_mask=None):
         """
         Forward  pass for the Decoder
 
@@ -573,7 +573,7 @@ class Decoder(tf.keras.layers.Layer):
         for i in range(self.num_layers):
             # pass x and the encoder output through a stack of decoder layers and save the attention weights
             # of block 1 and 2 (~1 line)
-            x, block1, block2 = self.dec_layers[i](x, enc_output, training, look_ahead_mask, padding_mask)
+            x, block1, block2 = self.dec_layers[i](x, enc_output, training=training, look_ahead_mask=look_ahead_mask, padding_mask=padding_mask)
 
             # update attention_weights dictionary with the attention weights of block 1 and block 2
             attention_weights['decoder_layer{}_block1_self_att'.format(i + 1)] = block1
@@ -663,8 +663,8 @@ class Transformer(tf.keras.Model):
 
         self.final_layer = tf.keras.layers.Dense(target_vocab_size, activation='softmax')
 
-    def call(self, input_sentence, output_sentence, training, enc_padding_mask,
-             look_ahead_mask, dec_padding_mask):
+    def call(self, input_sentence, output_sentence, *, training=False, enc_padding_mask=None,
+             look_ahead_mask=None, dec_padding_mask=None):
         """
         Forward pass for the entire Transformer
         Arguments:
@@ -686,12 +686,12 @@ class Transformer(tf.keras.Model):
         """
         ### START CODE HERE ###
         # call self.encoder with the appropriate arguments to get the encoder output
-        enc_output = self.encoder(input_sentence, training, enc_padding_mask)
+        enc_output = self.encoder(input_sentence, training=training, mask=enc_padding_mask)
 
         # call self.decoder with the appropriate arguments to get the decoder output
         # dec_output.shape == (batch_size, tar_seq_len, fully_connected_dim)
-        dec_output, attention_weights = self.decoder(output_sentence, enc_output, training, look_ahead_mask,
-                                                     dec_padding_mask)
+        dec_output, attention_weights = self.decoder(output_sentence, enc_output, training=training, look_ahead_mask=look_ahead_mask,
+                                                     padding_mask=dec_padding_mask)
 
         # pass decoder output through a linear layer and softmax (~1 line)
         final_output = self.final_layer(dec_output)
